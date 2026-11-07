@@ -75,11 +75,9 @@ endif ()
 option(ENABLE_OPENGL "Enable OpenGL support. Not supported on all platforms; defaults to OFF in such case." ${DEFAULT_ENABLE_OPENGL})
 set(ENABLE_OGLRENDERER ${ENABLE_OPENGL})
 set(OPENGL_PROFILE ${DEFAULT_OPENGL_PROFILE} CACHE STRING "OpenGL profile to use if OpenGL is enabled. Valid values are 'OpenGL', 'OpenGLES2', 'OpenGLES3', 'OpenGLES31', and 'OpenGLES32'.")
-set_property(CACHE OPENGL_PROFILE PROPERTY STRINGS OpenGL OpenGLES2 OpenGLES3)
+set_property(CACHE OPENGL_PROFILE PROPERTY STRINGS OpenGL OpenGLES2 OpenGLES3 OpenGLES31 OpenGLES32)
 
-if (ENABLE_OPENGL AND (NOT OPENGL_PROFILE STREQUAL "OpenGL"))
-    message(FATAL_ERROR "melonDS does not support OpenGL ES yet")
-endif()
+# 游典: OpenGL ES 3.2 (Android), with a melonDS whose GL renderer is ported to it.
 
 if (APPLE)
     # Apple's OpenGL stops at 4.1, but melonDS's compute renderer needs 4.3

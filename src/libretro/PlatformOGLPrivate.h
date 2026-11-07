@@ -25,6 +25,21 @@
 #include <glsym/glsym.h>
 #endif
 
+#ifdef HAVE_OPENGLES
+// 游典 (Android): OpenGL ES 3.2's own declarations (compute, texture buffers, border clamping,
+// object labels) beside glsym's ES 3.0 ones; libGLESv3 has them all.
+#include <GLES3/gl32.h>
+#ifndef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
+#define GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER 0x8CDB
+#endif
+#ifndef GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
+#define GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER 0x8CDC
+#endif
+#ifndef GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS
+#define GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS 0x8DA8
+#endif
+#endif
+
 #ifndef GL_BUFFER
 #define GL_BUFFER 0x82E0
 #endif

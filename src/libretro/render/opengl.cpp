@@ -180,10 +180,17 @@ MelonDsDs::OpenGLRenderState::OpenGLRenderState(RenderMode mode) : _mode(mode) {
     // Its compute renderer's shaders are "#version 430 core", so that one needs 4.3.
     // The frontend gets exactly one version request per context,
     // which is why each render mode gets its own OpenGLRenderState.
+#ifdef HAVE_OPENGLES
+    // 游典 (Android): OpenGL ES 3.2, which melonDS's GL renderer is ported to (see OpenGLSupport's ToGLES).
+    _hw_render.context_type = RETRO_HW_CONTEXT_OPENGLES_VERSION;
+    _hw_render.version_major = 3;
+    _hw_render.version_minor = 2;
+#else
     _hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
     _hw_render.version_major = LEGACY_GL_VERSION.first;
     _hw_render.version_minor = LEGACY_GL_VERSION.second;
-#ifdef HAVE_COMPUTE_RENDERER
+#endif
+#if defined(HAVE_COMPUTE_RENDERER) && !defined(HAVE_OPENGLES)
     if (UsesComputeRenderer()) {
         _hw_render.version_major = COMPUTE_GL_VERSION.first;
         _hw_render.version_minor = COMPUTE_GL_VERSION.second;
@@ -251,6 +258,7 @@ void MelonDsDs::OpenGLRenderState::ContextReset(melonDS::NDS& nds, const CoreCon
     // so the OpenGL 1.0/1.1 functions that glsym doesn't cover
     // must be resolved before we make our first OpenGL call
     // (see PlatformOGLPrivate.h)
+#ifndef HAVE_OPENGLES  // ES: linked against libGLESv3, nothing of 1.x to resolve
     rglgen_resolve_symbols_custom(
         reinterpret_cast<rglgen_proc_address_t>(_hw_render.get_proc_address),
         melondsds_base_gl_symbol_map
@@ -271,8 +279,23 @@ void MelonDsDs::OpenGLRenderState::ContextReset(melonDS::NDS& nds, const CoreCon
         throw opengl_not_initialized_exception();
     }
 
+#endif
+
     // Now resolve everything else that glsym knows about
     rglgen_resolve_symbols(_hw_render.get_proc_address);
+
+#ifdef HAVE_OPENGLES
+    // 游典 (Android): the driver's own errors and warnings in the log (OpenGL ES 3.2's KHR_debug).
+    if (std::getenv("MELONDSDS_GLES_DEBUG") || true) {  // the first ones only: a broken call repeats each frame
+        static int logged = 0;
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void*) {
+            if (severity == GL_DEBUG_SEVERITY_NOTIFICATION || logged >= 20) return;
+            logged++;
+            retro::error("GL debug: type {:#x} id {} severity {:#x}: {}", type, id, severity, message);
+        }, nullptr);
+    }
+#endif
     TracyGpuContext; // Must be called AFTER the function pointers are bound!
 
     const char *vendor   = (const char*)glGetString(GL_VENDOR);

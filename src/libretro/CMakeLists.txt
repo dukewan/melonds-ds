@@ -146,15 +146,22 @@ target_include_directories(melondsds_libretro SYSTEM PUBLIC
 
 target_include_directories(melondsds_libretro PRIVATE "${CMAKE_SOURCE_DIR}/src/libretro")
 
+# 游典 (Android, OpenGL ES 3.2): the screen shaders as GLSL ES 3.20 (tools/convert_gles.py).
+if (HAVE_OPENGLES)
+    set(MELONDSDS_GLSL_DIR "es/")
+else ()
+    set(MELONDSDS_GLSL_DIR "")
+endif ()
+
 embed_binaries(libretro-assets
     ASSET
         NAME "melondsds_vertex_shader"
-        PATH "glsl/melondsds.vert"
+        PATH "glsl/${MELONDSDS_GLSL_DIR}melondsds.vert"
         BYTE_TYPE char
         NULL_TERMINATE
     ASSET
         NAME "melondsds_fragment_shader"
-        PATH "glsl/melondsds.frag"
+        PATH "glsl/${MELONDSDS_GLSL_DIR}melondsds.frag"
         BYTE_TYPE char
         NULL_TERMINATE
     ASSET
