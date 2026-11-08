@@ -7,7 +7,7 @@ spelled out. Locations are taken out again: the attributes are bound by name in 
 its location. 3DRender's W-buffer variant (#define WBuffer) is written as 3DRender?S_W.
 Run after changing a shader; the result is committed."""
 import glob, os, re, subprocess, sys, tempfile
-root = os.path.expanduser('~/code/youdian-cores/melonDS/src/OpenGL_shaders')
+root = os.path.expanduser('../melonDS/src/OpenGL_shaders')
 out_dir = os.path.join(root, 'es')
 os.makedirs(out_dir, exist_ok=True)
 
