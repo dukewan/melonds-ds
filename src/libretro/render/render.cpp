@@ -33,6 +33,7 @@
 
 #if defined(HAVE_OPENGL) || defined(HAVE_OPENGLES)
 #include <GPU_OpenGL.h>
+#include "render/gl_renderer.hpp"
 #include "render/opengl.hpp"
 #endif
 
@@ -71,7 +72,7 @@ void MelonDsDs::RenderStateWrapper::Render(
 /// which stops the frontend from drawing anything at all (menus and overlays included).
 static void ReleaseOpenGlRenderer(melonDS::NDS* nds) noexcept {
 #if defined(HAVE_OPENGL) || defined(HAVE_OPENGLES)
-    if (!nds || !dynamic_cast<melonDS::GLRenderer*>(&nds->GetRenderer())) {
+    if (!nds || !MelonDsDs::IsGlRenderer(nds->GetRenderer())) {
         // If there's no console yet, or if it isn't rendering with OpenGL...
         return;
     }
@@ -207,7 +208,7 @@ void MelonDsDs::RenderStateWrapper::UpdateRenderer(const CoreConfig& config, mel
     auto* glRender = dynamic_cast<OpenGLRenderState*>(_renderState.get());
     bool rendererIsStale =
         // melonDS isn't using an OpenGL renderer at all (a new console starts with the software one)...
-        !dynamic_cast<melonDS::GLRenderer*>(&nds.GetRenderer())
+        !MelonDsDs::IsGlRenderer(nds.GetRenderer())
         // ...or it's using the OpenGL renderer we've since switched away from
         || (glRender && glRender->InstalledMode() != glRender->Mode());
 
@@ -218,11 +219,11 @@ void MelonDsDs::RenderStateWrapper::UpdateRenderer(const CoreConfig& config, mel
         retro::debug("Initializing {} renderer", glRender->Mode());
 
         // Any renderer already in place is replaced here, while its context is still current
-        nds.SetRenderer(std::make_unique<melonDS::GLRenderer>(nds, glRender->UsesComputeRenderer()));
+        nds.SetRenderer(MelonDsDs::MakeGlRenderer(nds, glRender->UsesComputeRenderer()));
 
         // melonDS installs its own software renderer if the one we gave it failed to start,
         // so that's how we find out whether this worked.
-        if (dynamic_cast<melonDS::GLRenderer*>(&nds.GetRenderer())) {
+        if (MelonDsDs::IsGlRenderer(nds.GetRenderer())) {
             retro::debug("Initialized {} renderer.", glRender->Mode());
             glRender->MarkRendererInstalled();
             ApplyRendererSettings(nds, config);

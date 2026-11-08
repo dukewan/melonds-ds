@@ -25,6 +25,7 @@
 #include <utility>
 
 #include <GPU_OpenGL.h>
+#include "render/gl_renderer.hpp"
 #include <GPU_Soft.h>
 #include <NDS.h>
 
@@ -326,11 +327,11 @@ void MelonDsDs::OpenGLRenderState::ContextReset(melonDS::NDS& nds, const CoreCon
         // deleting them here would delete names that this context never handed out.
         // (The "correct" way to do this would be to add a Reinitialize() method to GLRenderer
         // that recreates all resources)
-        nds.SetRenderer(std::make_unique<melonDS::GLRenderer>(nds, UsesComputeRenderer()));
+        nds.SetRenderer(MelonDsDs::MakeGlRenderer(nds, UsesComputeRenderer()));
 
         // melonDS installs its own software renderer if the one we gave it failed to start,
         // so that's how we find out whether this worked.
-        if (!dynamic_cast<melonDS::GLRenderer*>(&nds.GetRenderer())) {
+        if (!MelonDsDs::IsGlRenderer(nds.GetRenderer())) {
             retro::error("Failed to initialize {} renderer!", _mode);
             throw opengl_not_initialized_exception(
                 "melonDS's OpenGL renderer failed to initialize",
@@ -520,7 +521,7 @@ void MelonDsDs::OpenGLRenderState::Render(
 ) noexcept {
     ZoneScopedN(TracyFunction);
     TracyGpuZone(TracyFunction);
-    retro_assert(dynamic_cast<melonDS::GLRenderer*>(&nds.GetRenderer()) != nullptr);
+    retro_assert(MelonDsDs::IsGlRenderer(nds.GetRenderer()));
 
     // Binds the frontend's framebuffer, the screen shader, the VAO/VBO/UBO,
     // and resets whatever fixed-function state the frontend or melonDS may have changed
@@ -828,7 +829,7 @@ void MelonDsDs::OpenGLRenderState::UnbindState() noexcept {
 void MelonDsDs::OpenGLRenderState::InitFrameState(melonDS::NDS& nds, const CoreConfig& config, const ScreenLayoutData& screenLayout) noexcept {
     ZoneScopedN(TracyFunction);
     TracyGpuZone(TracyFunction);
-    retro_assert(dynamic_cast<melonDS::GLRenderer*>(&nds.GetRenderer()) != nullptr);
+    retro_assert(MelonDsDs::IsGlRenderer(nds.GetRenderer()));
 
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
