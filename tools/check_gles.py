@@ -5,7 +5,7 @@ import glob, os, re, subprocess, sys, tempfile
 HEAD = ("#version 320 es\nprecision highp float;\nprecision highp int;\nprecision highp sampler2D;\n"
         "precision highp usampler2D;\nprecision highp isampler2D;\nprecision highp sampler2DArray;\n"
         "precision highp usampler2DArray;\nprecision highp sampler3D;\n")
-root = os.path.expanduser('~/code/youdian-cores')
+root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # this repo's parent (melonDS beside it)
 files = sorted(glob.glob(f'{root}/melonDS/src/OpenGL_shaders/es/*.glsl')) + \
         [f'{root}/melonds-ds/src/libretro/glsl/es/melondsds.vert', f'{root}/melonds-ds/src/libretro/glsl/es/melondsds.frag']
 bad = 0

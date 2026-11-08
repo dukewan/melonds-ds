@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """melonDS's GLSL 1.40 shaders as GLSL ES 3.20 for 游典's Android build (OpenGL ES 3.2), written to
-melonDS/src/OpenGL_shaders/es/: compiled to SPIR-V by glslangValidator (desktop GLSL, whose implicit
+melonDS's src/OpenGL_shaders/es/: compiled to SPIR-V by glslangValidator (desktop GLSL, whose implicit
 int/float conversions ES doesn't have), then back to GLSL ES by SPIRV-Cross, with every conversion
 spelled out. Locations are taken out again: the attributes are bound by name in C++
 (glBindAttribLocation), the stages' in/out match by name, and ToGLES gives each fragment output
 its location. 3DRender's W-buffer variant (#define WBuffer) is written as 3DRender?S_W.
 Run after changing a shader; the result is committed."""
 import glob, os, re, subprocess, sys, tempfile
-root = os.path.expanduser('../melonDS/src/OpenGL_shaders')
+# Paths: this repo, and melonDS checked out beside it (MELONDS_DIR, else ../melonDS).
+here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+root = os.path.join(os.environ.get('MELONDS_DIR', os.path.join(here, '..', 'melonDS')), 'src', 'OpenGL_shaders')
 out_dir = os.path.join(root, 'es')
 os.makedirs(out_dir, exist_ok=True)
 
@@ -51,7 +53,7 @@ for f in sorted(glob.glob(os.path.join(root, '*.glsl'))):
 print(f'{n} shaders written to {out_dir}')
 
 # melonDS DS's own screen shaders, the same way, to melonds-ds/src/libretro/glsl/es/.
-ds = os.path.expanduser('~/code/youdian-cores/melonds-ds/src/libretro/glsl')
+ds = os.path.join(here, 'src', 'libretro', 'glsl')
 os.makedirs(os.path.join(ds, 'es'), exist_ok=True)
 for f, stage in (('melondsds.vert', 'vert'), ('melondsds.frag', 'frag')):
     open(os.path.join(ds, 'es', f), 'w').write(convert(open(os.path.join(ds, f)).read(), stage, f))
