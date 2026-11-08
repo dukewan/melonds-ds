@@ -191,6 +191,9 @@ namespace MelonDsDs {
         const bool _initialized = true;
         bool _ndsSramInstalled = false;
         bool _deferredInitializationPending = false;
+        // 游典: a state the frontend loaded before the deferred start (its 继续, right after loading the
+        // game): loaded once the console has started.
+        std::vector<std::byte> _pendingState;
         /// If set, we report a maximum geometry one row taller than we need,
         /// so that we can change it whenever the frontend needs to rebuild its video driver.
         /// \see UpdateSystemAvInfo

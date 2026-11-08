@@ -387,6 +387,12 @@ bool MelonDsDs::CoreState::RunDeferredInitialization() noexcept {
         retro::debug("Starting deferred initialization");
         StartConsole();
         _deferredInitializationPending = false;
+        if (!_pendingState.empty()) {
+            std::vector<std::byte> state = std::move(_pendingState);
+            _pendingState.clear();
+            if (!Unserialize(state))
+                retro::error("The savestate kept for the deferred start didn't load");
+        }
 
         retro::debug("Completed deferred initialization");
     }
@@ -1044,6 +1050,13 @@ bool MelonDsDs::CoreState::Unserialize(std::span<const std::byte> data) noexcept
     ZoneScopedN(TracyFunction);
     if (_messageScreen)
         return false;
+
+    if (_deferredInitializationPending) {
+        // The console starts at the first retro_run (OpenGL): kept, loaded then.
+        _pendingState.assign(data.begin(), data.end());
+        retro::info("Savestate kept until the deferred start ({} bytes)", data.size());
+        return true;
+    }
 
     retro_assert(Console != nullptr);
 
